@@ -32,6 +32,7 @@ If you want to download from source then you will need to compile the code using
 This lib is part of the `libxlsxwriter-dev` package and will need to be installed and imported to compile.
 
 For Linux `g++ -o Main Main.cpp -lxlsxwriter`
+
 For MacOS `clang++ -o Main Main.cpp -lxlsxwriter`
 
 # Usage
