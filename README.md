@@ -33,7 +33,11 @@ This lib is part of the `libxlsxwriter-dev` package and will need to be installe
 
 For Linux `g++ -o Main Main.cpp -lxlsxwriter`
 
-For MacOS `clang++ -o Main Main.cpp -lxlsxwriter`
+For MacOS `clang++ -std=c++17 -o Main Main.cpp -lxlsxwriter`
+
+For MacOS Static Link `clang++ -std=c++17 -o Main Main.cpp path/to/libxlsxwriter.a -lz -lxml2`
+
+Library is usually installed in `/usr/local/Cellar/libxlsxwriter/1.1.8/lib/libxlsxwriter.a`
 
 # Usage
 To start the program just run the binary file.
