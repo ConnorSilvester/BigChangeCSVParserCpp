@@ -12,7 +12,10 @@
 #include <chrono>
 #include <iomanip>
 
-
+/**
+ * @brief function to return time in the format HH:MM:SS
+ * @return std::string
+ */
 std::string get_current_time_HH_MM_SS(){
     using namespace std::chrono;
 
@@ -30,6 +33,14 @@ std::string get_current_time_HH_MM_SS(){
     return result;
 }
 
+
+/**
+ * @brief basic logging struct.
+ * 
+ * Used to log and also to output to a file.
+ * 
+ * The format for a log is [HH:MM:SS] user_msg
+ */
 struct logger_t{
     std::vector<std::string> lines;
 
@@ -60,7 +71,11 @@ static const std::string FILE_EXTENSION = ".xlsx";
 static logger_t logger;
 
 
-
+/**
+ * @brief function to read the contents of a file
+ * @param file_path file path as a string
+ * @return std::string with file contents
+ */
 std::string read_file(const std::string& file_path){
     std::ifstream file(file_path);
 
@@ -73,7 +88,13 @@ std::string read_file(const std::string& file_path){
     return file_contents;
 }
 
-std::vector<std::string> split(const std::string& str, char delimiter){
+/**
+ * @brief split a string into a vector split by the delimiter
+ * @param str the raw string contents you want to split
+ * @param delimiter the char you want to split the string with
+ * @return std::vector<std::string>
+ */
+std::vector<std::string> split(const std::string& str, const char delimiter){
     std::vector<std::string> tokens;
     std::string token;
     std::stringstream ss(str);
@@ -85,20 +106,32 @@ std::vector<std::string> split(const std::string& str, char delimiter){
     return tokens;
 }
 
-std::string extract_single_quoted_string(const std::string& input){
-    size_t start = input.find('"');
+
+/**
+ * @brief extracts the contents inside "" inside a string
+ * @param str the raw string contents you want to extract from
+ * @return std::string of the extracted string
+ */
+std::string extract_single_quoted_string(const std::string& str){
+    size_t start = str.find('"');
     if (start == std::string::npos){
         return "";  // No opening quote found, return an empty string
     }
 
-    size_t end = input.find('"', start + 1);
+    size_t end = str.find('"', start + 1);
     if (end == std::string::npos){
         return "";  // No closing quote found, return an empty string
     }
 
-    return input.substr(start + 1, end - start - 1);
+    return str.substr(start + 1, end - start - 1);
 }
 
+
+/**
+ * @brief function to trim a string, removing whitespace, /n etc
+ * @param str the raw string contents you want to trim
+ * @return std::string of the trimmed string
+ */
 std::string trim(const std::string& str){
     size_t start = str.find_first_not_of(" \t\n\r\f\v");
     size_t end = str.find_last_not_of(" \t\n\r\f\v");
@@ -110,53 +143,79 @@ std::string trim(const std::string& str){
     return str.substr(start, end - start + 1);
 }
 
-std::string extract_phone_number(const std::string& input){
+
+/**
+ * @brief function to extract a phone number from a string
+ * @param str the raw string contents
+ * @return std::string of the phone number
+ */
+std::string extract_phone_number(const std::string& str){
+    std::string place_holder_number = "01234567891";
+
     // Find the last occurrence of '-'
-    size_t pos = input.rfind('-');
+    size_t pos = str.rfind('-');
     
     // Check if '-' was found and it is not the last character
-    if (pos != std::string::npos && pos + 1 < input.length()){
+    if (pos != std::string::npos && pos + 1 < str.length()){
         // Extract the substring from the position after the last '-'
-        std::string phone_number = input.substr(pos + 1);
+        std::string phone_number = str.substr(pos + 1);
         phone_number = trim(phone_number);
+
+        // Error checking in case of invalid number
         if (phone_number == std::string("00000000000")){
             phone_number = "01234567891";
-            logger.log("00000000000 Changed to 01234567891");
+            logger.log(std::string("00000000000 Changed to " + place_holder_number));
         }
         if (phone_number.length() != 11){
-            phone_number = "01234567891";
-            logger.log(std::string(phone_number + " Changed to 01234567891"));
+            phone_number = place_holder_number;
+            logger.log(std::string(phone_number + " Changed to " + place_holder_number));
         }
         return phone_number;
     }
 
 
-    // If no '-' found or it's at the end of the string, return an empty string
-    return "01234567891";
+    // If no '-' found or it's at the end of the string, return a placeholder number
+    logger.log("no ( - ) was found in str using placeholder number instead");
+    return place_holder_number;
 }
 
-std::string take_all_before(const std::string& input, const char delimiter){
-    // Find the last occurrence of '-'
-    size_t pos = input.rfind(delimiter);
+
+/**
+ * @brief function to extract the string before the given delimiter
+ * @param str the raw string contents
+ * @param delimiter the char you want to use
+ * @return std::string of the contents before the delimiter
+ */
+std::string take_all_before(const std::string& str, const char delimiter){
+    size_t pos = str.rfind(delimiter);
     
-    // Check if '-' was found
     if (pos != std::string::npos) {
-        // Extract the substring before the last '-'
-        return input.substr(0, pos);
+        return str.substr(0, pos);
     }
     
-    // If no '-' found, return the original string (or handle it as needed)
-    return input;
+    return str;
 }
 
-std::string remove_numbers_from_string(const std::string& input){
-    std::string result = input;
+/**
+ * @brief function to remove any numbers from a string
+ * @param str the raw string contents
+ * @return std::string of the contents minus the numbers
+ */
+std::string remove_numbers_from_string(const std::string& str){
+    std::string result = str;
     result.erase(std::remove_if(result.begin(), result.end(), [](char c) {
         return std::isdigit(static_cast<unsigned char>(c));
     }), result.end());
     return result;
 }
 
+
+/**
+ * @brief function to get a random number between two values
+ * @param lower the lower bound
+ * @param higher the higher bound
+ * @return int random number
+ */
 int get_random_number(int lower, int higher){
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -167,6 +226,11 @@ int get_random_number(int lower, int higher){
 }
 
 
+/**
+ * @brief std::map mapping from string to string
+ * 
+ * Used to map the postcode of a place to a city name
+ */
 const std::map<std::string, std::string> LOCATION_MAP = {
     {"AB", "Aberdeen"},
     {"AL", "St Albans"},
@@ -298,8 +362,10 @@ const std::map<std::string, std::string> LOCATION_MAP = {
 
 
 
-
-// Main Functions
+/**
+ * @brief function to make the job data excel sheet used on big change
+ * @param file_path string containing the file path of the csv file
+ */
 void make_job_data_excel(const std::string& file_path){
     std::string filename = "JobData" + FILE_EXTENSION;
     lxw_workbook  *workbook  = workbook_new(filename.c_str());
@@ -376,7 +442,10 @@ void make_job_data_excel(const std::string& file_path){
 }
 
 
-
+/**
+ * @brief function to make the contact data excel sheet used on big change
+ * @param file_path string containing the file path of the csv file
+ */
 void make_contact_data_excel(const std::string& file_path){
     
     std::string filename = "ContactData" + FILE_EXTENSION;
